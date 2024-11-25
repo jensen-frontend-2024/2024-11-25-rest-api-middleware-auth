@@ -1,5 +1,11 @@
 const express = require("express");
-const { logRequest, hashPassword } = require("./middleware.js");
+
+const {
+  checkIfBodyExists,
+  checkIfLoggedIn,
+  logRequest,
+  hashPassword,
+} = require("./middleware.js");
 
 const {
   deletePost,
@@ -17,13 +23,13 @@ app.use(express.json());
 app.use(logRequest);
 
 app.get("/posts", getAllPosts);
-app.get("/posts/:id", getPostById);
-app.post("/posts", postPost);
-app.put("/posts/:id", putPost);
-app.delete("/posts/:id", deletePost);
+app.get("/posts/:id", [checkIfLoggedIn], getPostById);
+app.post("/posts", [checkIfLoggedIn, checkIfBodyExists], postPost);
+app.put("/posts/:id", [checkIfLoggedIn, checkIfBodyExists], putPost);
+app.delete("/posts/:id", [checkIfLoggedIn], deletePost);
 
 // Lokal middleware som bara körs på denna endpoint. Sådana definieras i en array som andra-argument till endpointen.
-app.post("/users", [hashPassword], postUser);
+app.post("/users", [checkIfBodyExists, hashPassword], postUser);
 
 app.listen(3000, () => {
   console.log("Server is listening to port 3000");

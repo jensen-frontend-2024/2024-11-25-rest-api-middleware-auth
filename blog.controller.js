@@ -51,13 +51,6 @@ function getPostById(req, res) {
 
 function postPost(req, res) {
   const body = req.body;
-  const lengthOfBody = Object.keys(body).length;
-
-  if (!lengthOfBody) {
-    return res
-      .status(400)
-      .json({ message: "Body is malformed or doesn't exist." });
-  }
 
   const insertQuery = `
     INSERT INTO posts (content)
@@ -75,12 +68,6 @@ function postPost(req, res) {
 function putPost(req, res) {
   const { id } = req.params;
   const { body } = req; // object destructuring
-
-  if (!body.content) {
-    return res
-      .status(400)
-      .json({ message: "body.content is malformed or doesn't exist." });
-  }
 
   if (!postExists(id)) {
     return res
@@ -102,13 +89,6 @@ function putPost(req, res) {
 
 function postUser(req, res) {
   const body = req.body;
-  const lengthOfBody = Object.keys(body).length;
-
-  if (!lengthOfBody) {
-    return res
-      .status(400)
-      .json({ message: "Body is malformed or doesn't exist." });
-  }
 
   const insertQuery = `
     INSERT INTO users (username, password)

@@ -32,4 +32,30 @@ function hashPassword(req, res, next) {
   next();
 }
 
-module.exports = { logRequest, hashPassword };
+function checkIfBodyExists(req, res, next) {
+  const body = req.body;
+  const lengthOfBody = Object.keys(body).length;
+
+  if (!lengthOfBody) {
+    return res
+      .status(400)
+      .json({ message: "Body is malformed or doesn't exist." });
+  }
+
+  next();
+}
+
+function checkIfLoggedIn(req, res, next) {
+  return res.status(401).json({ message: "You are not logged in" });
+
+  // Skulle kunna vara mer kod här som kollar användare är inloggad eller inte.
+
+  next();
+}
+
+module.exports = {
+  logRequest,
+  hashPassword,
+  checkIfBodyExists,
+  checkIfLoggedIn,
+};

@@ -204,8 +204,7 @@ När du anropar `/juice?citroner=5` med en GET-förfrågan:
 2. **Validering:** `validateMiddleware` kontrollerar att citroner skickats.
 3. **Bearbetning:** `processMiddleware` omvandlar citronerna till juice.
 4. **Svar:** Slutligen skickas svaret tillbaka till klienten som en flaska citronjuice.
-
-Metaforen med citroner och juice är en utmärkt illustration av hur middleware fungerar för att bearbeta data steg för steg i ett API!
+   Metaforen med citroner och juice är en utmärkt illustration av hur middleware fungerar för att bearbeta data steg för steg i ett API!
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
