@@ -19,15 +19,92 @@
 
 ## Middleware
 
+Middleware i ett API är som ett filter eller en mellanliggande station där vi kan berabeta inkommande förfrågningar och utgående svar innan de når sin slutdestination, till exempel en endpoint.
+
 ### Vad är middleware?
+
+Tänk på middleware som en kontrollstation som varje förfrågan måste passera innan den når sitt mål. Middleware kan användas för:
+
+- Logga information om requestet, till exempel vilken metod som används och vilken URL som anropas, alltså vilken resurs som efterfrågas.
+
+- Kontrollera att användaren är inloggand eller har rätt befogenheter. _( autentisering )_
+
+- Läsa och modifiera datan i förfrågan eller svaret.
+
+- Validera data som skickas med i requestet.
+
+- Hantera fel som kan uppstå i applikationen.
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
 ### Hur fungerar det?
 
+I Express.js är middleware helt enkelt en funktion som körs innan en endpoint hanteras. En middleware har alltid tillgång till tre olika parametrar:
+
+- req **( request )**: innehåller information om förfrågan, som URL och data.
+
+- res **( response )**: används för att skicka ett svar tillbaks till klienten.
+
+- next: en funktion som säger till express att gå vidare till nästa middleware eller endpoint.
+
+Syntax:
+
+```js
+function middleWare(req, res, next) {
+  // code to execute on the request.
+  // Must end with a response or a call to the next function
+  // res.send("Something");
+  // res.json({message: "some message"});
+  // res.status(404).json({message: "some error message"})
+  // next();
+}
+```
+
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
 ### Exempel: Logga information om förfrågningar
+
+Här har vi ett exempel på hur vi kan använda middleware för att logga infromation om varje request.
+
+`middlewares.js`
+
+```js
+function logRequest(req, res, next) {
+  const logString = `[${new Date().toISOString()}] ${req.method} ${req.URL}`;
+
+  console.log(logString);
+}
+
+module.exports = { logRequest };
+```
+
+För att använda en middleware i en expressapplikation så använder vi en metod som heter `app.use()`. Det är faktiskt något som vi redan har använt när vi vill att vårt API ska hantera en body som hänger med i requestet från klienten.
+
+`app.use(express.json())`;
+
+`index.js`
+
+```js
+const express = require("express");
+const { logRequest } = require("./middleware.js");
+const app = express();
+
+app.use(logRequest);
+
+app.get("/test", (req, res) => {
+  res.send("Det här är ett svar där förfrågan passerade igenom en middleware.");
+});
+
+app.listen(3000, () => {
+  console.log("Servern lyssnar på port 3000.");
+});
+```
+
+Vad händer är:
+
+1. När en användare för en förfrågan, till exemepel en GET till /test, körs middleware-funktionen och logRequest först.
+2. Middleware loggar informationen om förfrågan, i det här fallet bara vilken HTTP-metod som används samt vilken URL som anropades.
+3. Funktionen next() anropas och skickar vidare requestet till nästa steg i processen. Till slut hamnar den hos endpointen och skickas tillbaks till klienten.
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
