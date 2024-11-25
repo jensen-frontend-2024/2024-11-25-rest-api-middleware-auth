@@ -8,8 +8,7 @@
   - [Vad är middleware?](#vad-är-middleware)
   - [Hur fungerar det?](#hur-fungerar-det)
   - [Exempel: Logga information om förfrågningar](#exempel-logga-information-om-förfrågningar)
-  - [Fler användningsområden för middleware](#fler-användningsområden-för-middleware)
-  - [Några bilder som illustrerar middleware](#några-bilder-som-illustrerar-middleware')
+  - [Bilder som illustrerar middleware](#bilder-som-illustrerar-middleware)
   - [Metaforen: Middleware som en juicepress](#metaforen-middleware-som-en-juicepress)
 
 - [Autentisering](#autentisering)
@@ -112,7 +111,7 @@ Vad händer är:
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
-### Några bilder som illustrerar middleware
+### Bilder som illustrerar middleware
 
 <figure>
 <image src="assets/middleware1.png">
@@ -209,3 +208,100 @@ När du anropar `/juice?citroner=5` med en GET-förfrågan:
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
 ## Autentisering
+
+I detta avsnitt använder vi oss en inbyggd modul i node.js som heter crypto. Crypto ger oss inbyggd funktionalitet för kryptografiska operationer, till exempel hashning av lösenord.
+
+För att använda oss utav detta så måste vi helt enkelt importera in crypto, mer specifikt en metod som vi ska använda:
+
+```js
+const { createHmac } = require("crypto");
+```
+
+createHmac är en metod som i slutändan kommer att hasha våra lösenorder. Den gör det genom en liten funktionsslinga som ser ut så här:
+
+```js
+const hashedPassword = createHmac("sha256", secret)
+  .update(password)
+  .digest("hex");
+```
+
+Vad de olika delarna gör är inte så jätteviktigt. Vi ska i alla fall veta att "sha256" är en krytografisk hashfunktion som inte krypterar saker och ting, utan endast hashar dem. Skillnaden mellan krypteringo och hashning är följande:
+
+- **Kryptering**: Omvandlar data till en krypterad form som kan dekrypteras för att få tillbaka originaldata med hjälp av en nyckel.
+
+- **Hashing**: Tar data och skapar en fast längd på "hashvärde", en typ av signatur eller "fingeravtryck", som inte kan omvandlas tillbaka till originaldata.
+
+Så om vi ska jämföra till exempelt ett lösenord som kommer in via en inloggning med det som finns i databasen så måste vi helt enkelt hasha det läsenorder, med samma "secret" och samma hash-funktion för att sen jämför det med det lagrade hashade lösenordet i databasen.
+
+Vi skapar iafl en endpoint för att skapa en ny användare, och för att göra det så behöver vi stöd för det i vår databas. Se en tabell som heter "users" som innehåller, id, username och password måste vi ha.
+
+`middlewares.js`
+
+```js
+function hashPassword(req, res, next) {
+  const { password } = req.body;
+  //   const password = req.body.password // samma som ovan;
+
+  if (!password) {
+    return res.status(400).json({ message: "The password is missing." });
+  }
+
+  // Secret är en hemlig sträng som inkluderas i hashen, den bör sparas någon annastans givetvis men för uppgiftens syfte så spelar det ingen roll. Läs på om ENV-variabler om ni vill veta mer om detta.
+  const secret = "starwarsattackoftheclones";
+
+  // Denna funktionsslinga använder sig av en krypteringsmetod tillsammans med din "hemlighet" för att hasha lösenordet. Mer än så behöver vi inte veta.
+  const hashedPassword = createHmac("sha256", secret)
+    .update(password)
+    .digest("hex");
+
+  // Vi lägger på ett attribut på req.objektet som då innhåller det hashade lösenorder. Vi modiferar alltså data i denna middleware också.
+  req.hashedPassword = hashedPassword;
+
+  // Vi tar bort password-attributet från req-objektet så att det inte kan hanteras vidare.
+  delete req.password;
+
+  next();
+}
+
+function checkIfBodyExists(req, res, next) {
+  const body = req.body;
+  const lengthOfBody = Object.keys(body).length;
+
+  if (!lengthOfBody) {
+    return res
+      .status(400)
+      .json({ message: "Body is malformed or doesn't exist." });
+  }
+
+  next();
+}
+```
+
+`blog.controller.js`
+
+```js
+function postUser(req, res) {
+  const body = req.body;
+
+  const insertQuery = `
+    INSERT INTO users (username, password)
+    VALUES (?, ?)
+  `;
+
+  const stmt = db.prepare(insertQuery);
+
+  // req.hashedPassword existerar för att vår middleware har lagt till det.
+  stmt.run([body.username, req.hashedPassword]);
+
+  return res
+    .status(201)
+    .json({ message: "The new user was successfully created" });
+}
+```
+
+`index.js`
+
+```js
+// Lokal middleware som bara körs på denna endpoint. Sådana definieras i en array som andra-argument till endpointen.
+app.post("/users", [checkIfBodyExists, hashPassword], postUser);
+```
