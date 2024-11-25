@@ -12,7 +12,7 @@
   - [Några bilder som illustrerar middleware](#några-bilder-som-illustrerar-middleware')
   - [Metaforen: Middleware som en juicepress](#metaforen-middleware-som-en-juicepress)
 
-- [Autentisering](#)
+- [Autentisering](#autentisering)
   </details>
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
@@ -135,3 +135,5 @@ När du anropar `/juice?citroner=5` med en GET-förfrågan:
 Metaforen med citroner och juice är en utmärkt illustration av hur middleware fungerar för att bearbeta data steg för steg i ett API!
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
+
+## Autentisering
