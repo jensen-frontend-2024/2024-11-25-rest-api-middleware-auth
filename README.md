@@ -108,10 +108,6 @@ Vad händer är:
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
 
-### Fler användningsområden för middleware
-
-[Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)
-
 ### Varför är middleware så kraftfullt?
 
 [Tillbaks till toppen](#2024-11-25-rest-api-med-middleware-och-auth)

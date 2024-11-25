@@ -100,6 +100,31 @@ function putPost(req, res) {
   return res.json({ message: "The post was successfully updated" });
 }
 
+function postUser(req, res) {
+  const body = req.body;
+  const lengthOfBody = Object.keys(body).length;
+
+  if (!lengthOfBody) {
+    return res
+      .status(400)
+      .json({ message: "Body is malformed or doesn't exist." });
+  }
+
+  const insertQuery = `
+    INSERT INTO users (username, password)
+    VALUES (?, ?)
+  `;
+
+  const stmt = db.prepare(insertQuery);
+
+  // req.hashedPassword existerar för att vår middleware har lagt till det.
+  stmt.run([body.username, req.hashedPassword]);
+
+  return res
+    .status(201)
+    .json({ message: "The new user was successfully created" });
+}
+
 function postExists(id) {
   const getPostByIdQuery = `
     SELECT * FROM posts 
@@ -117,5 +142,6 @@ module.exports = {
   getAllPosts,
   getPostById,
   postPost,
+  postUser,
   putPost,
 };
